@@ -62,12 +62,12 @@ const handleSubmit = async (
       throw new Error("Invalid email address");
     }
 
-    await emailjs.send(
-      process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-      process.env.NEXT_PUBLIC_EMAILJS_CONTACT_TEMPLATE!,
-      templateParams,
-      process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-    );
+   await emailjs.send(
+    process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+    process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+    templateParams,
+    process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+  );
 
     formElement.reset();
     setStatus("success");
@@ -148,9 +148,18 @@ const handleSubmit = async (
             {/* Contact Form */}
             <FadeIn delay={0.15}>
               <form
-                onSubmit={handleSubmit}
-                className="space-y-8"
-              >
+  onSubmit={handleSubmit}
+  className="
+    space-y-8
+    rounded-3xl
+    border
+    border-border/40
+    bg-background-elevated/20
+    p-8
+    md:p-10
+    backdrop-blur-sm
+  "
+>
                 <div className="space-y-2">
                   <Label htmlFor="name">
                     Name
@@ -159,9 +168,12 @@ const handleSubmit = async (
                   <Input
                     id="name"
                     name="name"
+                    placeholder="Your full name"
                     required
                     disabled={status === "loading"}
+                    className="h-14 border-border/60 bg-background/40 px-5 backdrop-blur-sm transition-all duration-300 focus-visible:border-white/30 focus-visible:ring-0"
                   />
+                
                 </div>
 
                 <div className="space-y-2">
@@ -173,9 +185,12 @@ const handleSubmit = async (
                     id="email"
                     name="email"
                     type="email"
+                    placeholder="you@example.com"
                     required
                     disabled={status === "loading"}
+                    className="h-14 border-border/60 bg-background/40 px-5 backdrop-blur-sm transition-all duration-300 focus-visible:border-white/30 focus-visible:ring-0"
                   />
+                
                 </div>
 
                 <div className="space-y-2">
@@ -184,10 +199,12 @@ const handleSubmit = async (
                   </Label>
 
                   <Input
-                    id="subject"
-                    name="subject"
-                    required
-                    disabled={status === "loading"}
+                   id="subject"
+                   name="subject"
+                   placeholder="Order inquiry"
+                   required
+                   disabled={status === "loading"}
+                   className="h-14 border-border/60 bg-background/40 px-5 backdrop-blur-sm transition-all duration-300 focus-visible:border-white/30 focus-visible:ring-0"
                   />
                 </div>
 
@@ -197,49 +214,64 @@ const handleSubmit = async (
                   </Label>
 
                   <textarea
-                    id="message"
-                    name="message"
-                    rows={6}
-                    required
-                    disabled={status === "loading"}
-                    className="w-full border-b border-border-strong bg-transparent py-3 text-sm focus:outline-none resize-none disabled:opacity-50"
+                  id="message"
+                  name="message"
+                  rows={6}
+                  placeholder="Tell us how we can help..."
+                  required
+                  disabled={status === "loading"}
+                  className=" w-full min-h-[180px] rounded-xl border border-border/60 bg-background/40 px-5 py-4 text-sm backdrop-blur-sm transition-all duration-300 resize-none focus:border-white/30 focus:outline-none disabled:opacity-50"
                   />
                 </div>
-
+                   <p className="text-xs text-foreground-subtle">
+                    We typically respond {" "}
+                    {BRAND.responseTime.toLowerCase()}.
+                   </p>
                 <Button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="w-full sm:w-auto"
+                 type="submit"
+                 disabled={status === "loading"}
+                 className="w-full sm:w-auto min-w-[220px] h-14"
                 >
                   {status === "loading"
-                    ? "Sending..."
-                    : "Send Message"}
+  ? "Delivering Message..."
+  : "Send Message"}
                 </Button>
 
-                {status === "success" && (
-                  <div className="rounded-md border border-green-500/20 bg-green-500/5 px-4 py-3">
-                    <p className="text-sm text-green-400">
-                      Message sent successfully.
-                    </p>
+               {status === "success" && (
+  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.03] p-5 backdrop-blur-sm">
+    <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">
+      Message Received
+    </p>
 
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      Response usually within{" "}
-                      {BRAND.responseTime.toLowerCase()}.
-                    </p>
-                  </div>
-                )}
+    <p className="mt-3 text-sm leading-relaxed text-foreground">
+      Thank you for contacting VELR.
+      Your message has been delivered successfully and is now under review.
+    </p>
 
-                {status === "error" && (
-                  <div className="rounded-md border border-red-500/20 bg-red-500/5 px-4 py-3">
-                    <p className="text-sm text-red-400">
-                      Something went wrong.
-                    </p>
+    <p className="mt-3 text-xs text-foreground-muted">
+      A confirmation email should arrive shortly.
+      Our team typically responds {" "}
+      {BRAND.responseTime.toLowerCase()}.
+    </p>
+  </div>
+)}
 
-                    <p className="mt-1 text-xs text-foreground-muted">
-                      Please try again in a few moments.
-                    </p>
-                  </div>
-                )}
+               {status === "error" && (
+  <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-5 backdrop-blur-sm">
+    <p className="text-xs uppercase tracking-[0.18em] text-red-400">
+      Delivery Failed
+    </p>
+
+    <p className="mt-3 text-sm text-foreground">
+      Your message could not be delivered at this time.
+    </p>
+
+    <p className="mt-2 text-xs text-foreground-muted">
+      Please try again in a few moments or contact us directly at{" "}
+      {BRAND.email}.
+    </p>
+  </div>
+)}
               </form>
             </FadeIn>
 

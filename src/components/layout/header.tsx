@@ -16,38 +16,35 @@ import { cn } from "@/lib/utils";
 
 const LEFT_LINKS = NAV_LINKS.slice(0, 3);
 const RIGHT_LINKS = NAV_LINKS.slice(3);
-
 function CurrencyToggle({ compact = false }: { compact?: boolean }) {
-const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-const currency = useCurrencyStore((s) => s.currency);
-const setCurrency = useCurrencyStore((s) => s.setCurrency);
+  const currency = useCurrencyStore((s) => s.currency);
+  const toggleCurrency = useCurrencyStore(
+    (s) => s.toggleCurrency
+  );
 
-useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-return (
-<div
-className={cn(
-"flex items-center overflow-hidden rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md",
-compact ? "w-fit" : "hidden lg:flex"
-)}
->
-{mounted &&
-(["INR", "USD"] as const).map((option) => (
-<button
-key={option}
-type="button"
-onClick={() => setCurrency(option)}
-className={cn(
-"px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] transition-all duration-500",
-currency === option
-? "bg-white text-black"
-: "text-white/45 hover:text-white"
-)}
->
-{option} </button>
-))} </div>
-);
+  if (!mounted) return null;
+
+  const nextCurrency =
+    currency === "INR" ? "USD" : "INR";
+
+  return (
+    <button
+      type="button"
+      onClick={toggleCurrency}
+      className={cn(
+        "rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-white/70 transition-all duration-500 hover:border-white/20 hover:text-white",
+        compact ? "w-fit" : ""
+      )}
+    >
+      {nextCurrency}
+    </button>
+  );
 }
 
 function NavLink({
@@ -147,13 +144,16 @@ className="fixed inset-x-0 top-0 z-50 border-b"
           type="button"
           onClick={() => setMobileOpen(true)}
           aria-label="Open menu"
-          className="flex items-center justify-center p-3 text-white md:hidden hover:bg-white/10 active:bg-white/20"
+          className="flex items-center justify-center p-3 text-white xl:hidden hover:bg-white/10 active:bg-white/20"
         >
           <Menu className="h-6 w-6" />
         </button>
+        <div className="lg:hidden">
+  <CurrencyToggle compact />
+</div>
 
 
-        <nav className="hidden items-center gap-8 lg:flex">
+        <nav className="hidden items-center gap-8 xl:flex">
           {LEFT_LINKS.map((link) => (
             <NavLink
               key={link.href}
@@ -164,6 +164,7 @@ className="fixed inset-x-0 top-0 z-50 border-b"
           ))}
         </nav>
       </div>
+      
 
       {/* Logo */}
       <Link
@@ -192,8 +193,8 @@ className="fixed inset-x-0 top-0 z-50 border-b"
       </Link>
 
       {/* Right */}
-      <div className="flex flex-1 items-center justify-end gap-5">
-        <nav className="hidden items-center gap-8 lg:flex">
+      <div className="flex flex-1 items-center justify-end gap-3">
+        <nav className="hidden items-center gap-8 xl:flex">
           {RIGHT_LINKS.map((link) => (
             <NavLink
               key={link.href}
@@ -204,30 +205,27 @@ className="fixed inset-x-0 top-0 z-50 border-b"
           ))}
         </nav>
 
-        <CurrencyToggle />
 
         <button
-          type="button"
-          onClick={() => router.push("/search")}
-          aria-label="Search"
-          className="hidden text-white/55 transition-colors duration-500 hover:text-white md:flex"
-        >
+  type="button"
+  onClick={() => router.push("/search")}
+  className="text-white/55 transition-colors duration-500 hover:text-white"
+>
           <Search className="h-[18px] w-[18px] stroke-[1.5]" />
         </button>
 
         {mounted && isAuthenticated ? (
-          <Link
-            href="/account"
-            aria-label="Account"
-            className="hidden text-white/55 transition-colors duration-500 hover:text-white sm:flex"
-          >
+  <Link
+    href="/account"
+    className="text-white/55 transition-colors duration-500 hover:text-white"
+  >
             <User className="h-[18px] w-[18px] stroke-[1.5]" />
           </Link>
         ) : (
           <Link
-            href="/login"
-            className="hidden text-[11px] uppercase tracking-[0.18em] text-white/55 transition-colors duration-500 hover:text-white sm:flex"
-          >
+  href="/login"
+  className="text-[11px] uppercase tracking-[0.18em] text-white/55 transition-colors duration-500 hover:text-white"
+>
             Login
           </Link>
         )}
@@ -315,35 +313,6 @@ className="fixed inset-x-0 top-0 z-50 border-b"
                 </motion.div>
               ))}
             </div>
-
-            {/* Bottom */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.45 }}
-              className="mt-14 flex flex-wrap items-center gap-8 border-t border-white/10 pt-8 text-[11px] uppercase tracking-[0.18em] text-white/40"
-            >
-              {mounted && isAuthenticated ? (
-                <Link href="/account" onClick={() => setMobileOpen(false)}>Account</Link>
-              ) : (
-                <Link href="/login" onClick={() => setMobileOpen(false)}>Login</Link>
-              )}
-
-              <Link href="/cart" onClick={() => setMobileOpen(false)}>Cart</Link>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  router.push("/search");
-                }}
-                className="transition-colors duration-500 hover:text-white"
-              >
-                Search
-              </button>
-
-              <CurrencyToggle compact />
-            </motion.div>
           </nav>
         </div>
       </motion.div>
