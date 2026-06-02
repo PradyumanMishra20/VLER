@@ -10,7 +10,6 @@ import { useCurrencyStore } from "@/store/currency";
 import { useAuthStore } from "@/store/auth";
 import { formatPrice, cn } from "@/lib/utils";
 
-import { PAYMENT_METHODS } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,9 +22,12 @@ import { OrderSummary } from "@/components/checkout/order-summary";
 type Step = 0 | 1 | 2 | 3;
 
 type CheckoutData = {
-  shipping: Record<"firstName" | "lastName" | "address" | "city" | "state" | "zip", string>;
+  shipping: Record<
+    "firstName" | "lastName" | "address" | "city" | "state" | "zip",
+    string
+  >;
   deliveryMethod: "standard" | "express";
-  paymentMethod: string;
+  paymentMethod: "cod";
 };
 
 /* ---------------- ANIMATION ---------------- */
@@ -39,6 +41,16 @@ const fade = {
 
 const EXPRESS_SHIPPING = 249;
 
+/* ---------------- PAYMENT METHODS ---------------- */
+
+const PAYMENT_METHODS = [
+  {
+    id: "cod",
+    label: "Cash on Delivery",
+    description: "Pay when your order arrives at your doorstep.",
+  },
+];
+
 /* ---------------- COMPONENT ---------------- */
 
 export default function CheckoutPage() {
@@ -49,7 +61,6 @@ export default function CheckoutPage() {
     getSubtotal,
     getShipping,
     getDiscount,
-    getTotal,
     clearCart,
   } = useCartStore();
 
@@ -69,7 +80,7 @@ export default function CheckoutPage() {
       zip: "",
     },
     deliveryMethod: "standard",
-    paymentMethod: "card",
+    paymentMethod: "cod",
   });
 
   /* ---------------- AUTH GUARD ---------------- */
@@ -96,10 +107,16 @@ export default function CheckoutPage() {
 
   /* ---------------- HANDLERS ---------------- */
 
-  const updateShipping = (key: keyof CheckoutData["shipping"], value: string) => {
+  const updateShipping = (
+    key: keyof CheckoutData["shipping"],
+    value: string
+  ) => {
     setCheckoutData((p) => ({
       ...p,
-      shipping: { ...p.shipping, [key]: value },
+      shipping: {
+        ...p.shipping,
+        [key]: value,
+      },
     }));
   };
 
@@ -107,9 +124,13 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      await new Promise((r) => setTimeout(r, 1200));
+      await new Promise((r) => setTimeout(r, 1500));
+
       clearCart();
+
       router.push("/account?order=confirmed");
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -122,12 +143,18 @@ export default function CheckoutPage() {
       <PageTransition>
         <div className="min-h-[70vh] flex items-center justify-center text-center">
           <div className="page-container max-w-md">
-            <p className="editorial-subheading mb-4">Secure checkout</p>
+            <p className="editorial-subheading mb-4">
+              Secure checkout
+            </p>
+
             <h1 className="font-display text-display-md mb-6">
               Authentication required
             </h1>
+
             <Button asChild variant="outline">
-              <Link href="/login?redirect=/checkout">Sign in</Link>
+              <Link href="/login?redirect=/checkout">
+                Sign in
+              </Link>
             </Button>
           </div>
         </div>
@@ -140,12 +167,18 @@ export default function CheckoutPage() {
       <PageTransition>
         <div className="min-h-[70vh] flex items-center justify-center text-center">
           <div className="page-container max-w-md">
-            <p className="editorial-subheading mb-4">Checkout</p>
+            <p className="editorial-subheading mb-4">
+              Checkout
+            </p>
+
             <h1 className="font-display text-display-md mb-6">
               Your bag is empty
             </h1>
+
             <Button asChild variant="outline">
-              <Link href="/shop">Continue shopping</Link>
+              <Link href="/shop">
+                Continue shopping
+              </Link>
             </Button>
           </div>
         </div>
@@ -161,13 +194,18 @@ export default function CheckoutPage() {
         <div className="page-container max-w-6xl">
 
           {/* HEADER */}
+
           <header className="mb-24 max-w-2xl">
-            <p className="editorial-subheading mb-5">Secure checkout</p>
+            <p className="editorial-subheading mb-5">
+              Secure checkout
+            </p>
+
             <h1 className="font-display text-display-lg leading-[0.95]">
               Complete your order
             </h1>
+
             <p className="mt-6 text-sm text-foreground-muted">
-              Minimal checkout flow with structured steps.
+              Fast, minimal and frictionless checkout experience.
             </p>
           </header>
 
@@ -175,11 +213,13 @@ export default function CheckoutPage() {
 
           <div className="grid lg:grid-cols-[1fr_400px] gap-24 lg:gap-32">
 
-            {/* LEFT */}
+            {/* LEFT SIDE */}
+
             <div>
               <AnimatePresence mode="wait">
 
                 {/* STEP 1 */}
+
                 {step === 0 && (
                   <motion.form
                     key="shipping"
@@ -187,16 +227,23 @@ export default function CheckoutPage() {
                     className="space-y-14"
                     onSubmit={(e) => {
                       e.preventDefault();
-                      const valid = Object.values(checkoutData.shipping).every(Boolean);
-                      if (valid) setStep(1);
+
+                      const valid = Object.values(
+                        checkoutData.shipping
+                      ).every(Boolean);
+
+                      if (valid) {
+                        setStep(1);
+                      }
                     }}
                   >
                     <div>
                       <h2 className="font-display text-display-sm mb-3">
                         Shipping details
                       </h2>
+
                       <p className="text-sm text-foreground-muted">
-                        Where should this order arrive?
+                        Enter your delivery information.
                       </p>
                     </div>
 
@@ -206,11 +253,14 @@ export default function CheckoutPage() {
                           <Label className="text-xs uppercase tracking-[0.18em]">
                             {f}
                           </Label>
+
                           <Input
                             required
                             className="h-14 text-base"
                             value={checkoutData.shipping[f]}
-                            onChange={(e) => updateShipping(f, e.target.value)}
+                            onChange={(e) =>
+                              updateShipping(f, e.target.value)
+                            }
                           />
                         </div>
                       ))}
@@ -220,11 +270,14 @@ export default function CheckoutPage() {
                       <Label className="text-xs uppercase tracking-[0.18em]">
                         Address
                       </Label>
+
                       <Input
                         required
                         className="h-14 text-base"
                         value={checkoutData.shipping.address}
-                        onChange={(e) => updateShipping("address", e.target.value)}
+                        onChange={(e) =>
+                          updateShipping("address", e.target.value)
+                        }
                       />
                     </div>
 
@@ -234,11 +287,14 @@ export default function CheckoutPage() {
                           <Label className="text-xs uppercase tracking-[0.18em]">
                             {f}
                           </Label>
+
                           <Input
                             required
                             className="h-14 text-base"
                             value={checkoutData.shipping[f]}
-                            onChange={(e) => updateShipping(f, e.target.value)}
+                            onChange={(e) =>
+                              updateShipping(f, e.target.value)
+                            }
                           />
                         </div>
                       ))}
@@ -251,8 +307,13 @@ export default function CheckoutPage() {
                 )}
 
                 {/* STEP 2 */}
+
                 {step === 1 && (
-                  <motion.div {...fade} className="space-y-14">
+                  <motion.div
+                    key="delivery"
+                    {...fade}
+                    className="space-y-14"
+                  >
                     <h2 className="font-display text-display-sm">
                       Delivery method
                     </h2>
@@ -262,13 +323,13 @@ export default function CheckoutPage() {
                         {
                           id: "standard" as const,
                           label: "Standard",
-                          detail: "5–7 days",
+                          detail: "5–7 business days",
                           price: getShipping(),
                         },
                         {
                           id: "express" as const,
                           label: "Express",
-                          detail: "2–3 days",
+                          detail: "2–3 business days",
                           price: EXPRESS_SHIPPING,
                         },
                       ].map((m) => (
@@ -282,52 +343,76 @@ export default function CheckoutPage() {
                             }))
                           }
                           className={cn(
-                            "w-full flex justify-between py-6 border-b transition",
+                            "w-full flex justify-between py-6 border-b transition-all duration-300",
                             checkoutData.deliveryMethod === m.id
                               ? "border-foreground"
                               : "border-border/60"
                           )}
                         >
-                          <div>
+                          <div className="text-left">
                             <p>{m.label}</p>
+
                             <p className="text-xs text-foreground-muted">
                               {m.detail}
                             </p>
                           </div>
+
                           <span>
-                            {m.price === 0 ? "Free" : formatPrice(m.price, currency)}
+                            {m.price === 0
+                              ? "Free"
+                              : formatPrice(m.price, currency)}
                           </span>
                         </button>
                       ))}
                     </div>
 
                     <div className="flex gap-4">
-                      <Button variant="ghost" onClick={() => setStep(0)}>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setStep(0)}
+                      >
                         Back
                       </Button>
-                      <Button onClick={() => setStep(2)}>Continue</Button>
+
+                      <Button onClick={() => setStep(2)}>
+                        Continue
+                      </Button>
                     </div>
                   </motion.div>
                 )}
 
                 {/* STEP 3 */}
+
                 {step === 2 && (
-                  <motion.div {...fade} className="space-y-14">
-                    <h2 className="font-display text-display-sm">Payment</h2>
+                  <motion.div
+                    key="payment"
+                    {...fade}
+                    className="space-y-14"
+                  >
+                    <h2 className="font-display text-display-sm">
+                      Payment method
+                    </h2>
 
                     <div className="space-y-2">
                       {PAYMENT_METHODS.map((m) => (
                         <button
                           key={m.id}
+                          type="button"
                           onClick={() =>
                             setCheckoutData((p) => ({
                               ...p,
-                              paymentMethod: m.id,
+                              paymentMethod: "cod",
                             }))
                           }
-                          className="w-full py-6 border-b text-left"
+                          className={cn(
+                            "w-full border-b py-6 text-left transition-all duration-300",
+                            checkoutData.paymentMethod === m.id
+                              ? "border-foreground"
+                              : "border-border/60"
+                          )}
                         >
                           <p>{m.label}</p>
+
                           <p className="text-xs text-foreground-muted">
                             {m.description}
                           </p>
@@ -335,34 +420,83 @@ export default function CheckoutPage() {
                       ))}
                     </div>
 
+                    <div className="rounded-2xl border border-border/60 p-6">
+                      <p className="text-sm leading-relaxed text-foreground-muted">
+                        Cash on Delivery is available for eligible
+                        locations. Please keep the exact amount ready
+                        during delivery.
+                      </p>
+                    </div>
+
                     <div className="flex gap-4">
-                      <Button variant="ghost" onClick={() => setStep(1)}>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setStep(1)}
+                      >
                         Back
                       </Button>
-                      <Button onClick={() => setStep(3)}>Review</Button>
+
+                      <Button onClick={() => setStep(3)}>
+                        Review order
+                      </Button>
                     </div>
                   </motion.div>
                 )}
 
                 {/* STEP 4 */}
-                {step === 3 && (
-                  <motion.div {...fade} className="space-y-14">
-                    <h2 className="font-display text-display-sm">
-                      Review order
-                    </h2>
 
-                    <p className="text-sm text-foreground-muted">
-                      Confirm before placing order.
-                    </p>
+                {step === 3 && (
+                  <motion.div
+                    key="review"
+                    {...fade}
+                    className="space-y-14"
+                  >
+                    <div>
+                      <h2 className="font-display text-display-sm mb-3">
+                        Review order
+                      </h2>
+
+                      <p className="text-sm text-foreground-muted">
+                        Final confirmation before placing your order.
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-border/60 p-8 space-y-4">
+                      <div className="flex justify-between text-sm">
+                        <span>Payment method</span>
+                        <span>Cash on Delivery</span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span>Delivery</span>
+                        <span>
+                          {checkoutData.deliveryMethod === "express"
+                            ? "Express"
+                            : "Standard"}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between text-sm">
+                        <span>Total payable</span>
+
+                        <span className="font-medium">
+                          {formatPrice(total, currency)}
+                        </span>
+                      </div>
+                    </div>
 
                     <Button
                       size="lg"
                       disabled={loading}
                       onClick={handlePlaceOrder}
+                      className="min-w-[220px]"
                     >
                       {loading
-                        ? "Processing..."
-                        : `Place order — ${formatPrice(total, currency)}`}
+                        ? "Placing order..."
+                        : `Place order — ${formatPrice(
+                            total,
+                            currency
+                          )}`}
                     </Button>
                   </motion.div>
                 )}
@@ -370,7 +504,8 @@ export default function CheckoutPage() {
               </AnimatePresence>
             </div>
 
-            {/* RIGHT */}
+            {/* RIGHT SIDE */}
+
             <OrderSummary
               items={items}
               currency={currency}
